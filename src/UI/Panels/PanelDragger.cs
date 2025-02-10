@@ -249,48 +249,80 @@ namespace UniverseLib.UI.Panels
                 return;
         
             // we are entering resize, or the resize type has changed.
-        
             lastResizeHoverType = resizeType;
 
-            PanelManager.resizeCursorUIBase.Enabled = true;
-            PanelManager.resizeCursor.SetActive(true);
-        
-            // set the rotation for the resize icon
-            float iconRotation = 0f;
-            switch (resizeType)
+            try
             {
-                case ResizeTypes.TopRight:
-                case ResizeTypes.BottomLeft:
-                    iconRotation = 45f; break;
-                case ResizeTypes.Top:
-                case ResizeTypes.Bottom:
-                    iconRotation = 90f; break;
-                case ResizeTypes.TopLeft:
-                case ResizeTypes.BottomRight:
-                    iconRotation = 135f; break;
+                if (PanelManager.resizeCursorUIBase == null || PanelManager.resizeCursor == null)
+                    return;
+
+                PanelManager.resizeCursorUIBase.Enabled = true;
+                PanelManager.resizeCursor.SetActive(true);
+            
+                // set the rotation for the resize icon
+                float iconRotation = 0f;
+                switch (resizeType)
+                {
+                    case ResizeTypes.TopRight:
+                    case ResizeTypes.BottomLeft:
+                        iconRotation = 45f; break;
+                    case ResizeTypes.Top:
+                    case ResizeTypes.Bottom:
+                        iconRotation = 90f; break;
+                    case ResizeTypes.TopLeft:
+                    case ResizeTypes.BottomRight:
+                        iconRotation = 135f; break;
+                }
+            
+                Quaternion rot = PanelManager.resizeCursor.transform.rotation;
+                rot.eulerAngles = new Vector3(0, 0, iconRotation);
+                PanelManager.resizeCursor.transform.rotation = rot;
+            
+                UpdateHoverImagePos();
             }
-        
-            Quaternion rot = PanelManager.resizeCursor.transform.rotation;
-            rot.eulerAngles = new Vector3(0, 0, iconRotation);
-            PanelManager.resizeCursor.transform.rotation = rot;
-        
-            UpdateHoverImagePos();
+            catch
+            {
+                // Ignore any errors that might occur during resize hover
+            }
         }
         
         // update the resize icon position to be above the mouse
         private void UpdateHoverImagePos()
         {
-            Vector3 mousePos = UIPanel.Owner.Panels.MousePosition;
-            RectTransform rect = UIPanel.Owner.RootRect;
-            PanelManager.resizeCursorUIBase.SetOnTop();
+            try
+            {
+                if (PanelManager.resizeCursorUIBase == null || PanelManager.resizeCursor == null || 
+                    UIPanel?.Owner?.RootRect == null)
+                    return;
 
-            PanelManager.resizeCursor.transform.localPosition = rect.InverseTransformPoint(mousePos);
+                Vector3 mousePos = UIPanel.Owner.Panels.MousePosition;
+                RectTransform rect = UIPanel.Owner.RootRect;
+                PanelManager.resizeCursorUIBase.SetOnTop();
+                PanelManager.resizeCursor.transform.localPosition = rect.InverseTransformPoint(mousePos);
+            }
+            catch
+            {
+                // Ignore any errors that might occur during position update
+            }
         }
         
         public virtual void OnHoverResizeEnd()
         {
-            PanelManager.resizeCursorUIBase.Enabled = false;
-            PanelManager.resizeCursor.SetActive(false);
+            try
+            {
+                if (PanelManager.resizeCursorUIBase != null)
+                {
+                    PanelManager.resizeCursorUIBase.Enabled = false;
+                }
+                if (PanelManager.resizeCursor != null)
+                {
+                    PanelManager.resizeCursor.SetActive(false);
+                }
+            }
+            catch
+            {
+                // Ignore any errors that might occur during cleanup
+            }
         }
         
         public virtual void OnBeginResize(ResizeTypes resizeType)
@@ -354,7 +386,19 @@ namespace UniverseLib.UI.Panels
         {
             WasResizing = false;
             PanelManager.Resizing = false;
-            try { OnHoverResizeEnd(); } catch { }
+
+            try
+            {
+                if (PanelManager.resizeCursor != null && PanelManager.resizeCursorUIBase != null)
+                {
+                    OnHoverResizeEnd();
+                }
+            }
+            catch
+            {
+                // Log error if needed
+            }
+
             UpdateResizeCache();
             OnFinishResize?.Invoke();
         }
