@@ -31,14 +31,23 @@
         <AssemblyName>UniverseLib.Mono</AssemblyName>
         <DocumentationFile>..\Release\UniverseLib.Mono\UniverseLib.Mono.xml</DocumentationFile>
     </PropertyGroup>
+    <!-- IL2CPP Interop ML Configuration -->
+    <PropertyGroup Condition="'$(Configuration)' == 'Release_IL2CPP_Interop_ML'">
+        <TargetFramework>net6.0</TargetFramework>
+        <OutputPath>..\Release\UniverseLib.Il2Cpp.Interop.ML\</OutputPath>
+        <DefineConstants>IL2CPP;INTEROP;ML</DefineConstants>
+        <AssemblyName>UniverseLib.IL2CPP.Interop.ML</AssemblyName>
+        <DocumentationFile>..\Release\UniverseLib.Il2Cpp.Interop.ML\UniverseLib.IL2CPP.Interop.ML.xml</DocumentationFile>
+    </PropertyGroup>
     <!-- NuGet -->
     <ItemGroup>
         <PackageReference Include="HarmonyX" Version="2.10.1" IncludeAssets="compile" />
         <PackageReference Include="UniverseLib.Analyzers" Version="1.0.4" IncludeAssets="compile" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     </ItemGroup>
-    <ItemGroup Condition="'$(Configuration)' == 'Release_IL2CPP' and '$(TargetFramework)' == 'net6.0'">
-        <PackageReference Include="Il2CppInterop.Common" Version="1.4.5" />
-        <PackageReference Include="Il2CppInterop.Runtime" Version="1.4.5" />
+    <ItemGroup Condition="('$(Configuration)' == 'Release_IL2CPP' or '$(Configuration)' == 'Release_IL2CPP_Interop_ML') and '$(TargetFramework)' == 'net6.0'">
+        <PackageReference Include="Il2CppInterop.Common" Version="1.5.0" />
+        <PackageReference Include="Il2CppInterop.Runtime" Version="1.5.0" />
     </ItemGroup>
     <!-- Assembly References -->
     <ItemGroup Condition="'$(Configuration)' == 'Release_Mono'">
@@ -52,7 +61,7 @@
         </Reference>
     </ItemGroup>
    
-    <ItemGroup Condition="'$(Configuration)' == 'Release_IL2CPP' and '$(TargetFramework)' == 'net6.0'">
+    <ItemGroup Condition="('$(Configuration)' == 'Release_IL2CPP' or '$(Configuration)' == 'Release_IL2CPP_Interop_ML') and '$(TargetFramework)' == 'net6.0'">
         <Reference Include="Il2Cppmscorlib">
             <HintPath>..\lib\interop\Il2Cppmscorlib.dll</HintPath>
             <Private>False</Private>
