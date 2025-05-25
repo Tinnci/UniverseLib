@@ -1,6 +1,7 @@
 using System.Collections.Generic; // For Dictionary or other collections
 using System.IO; // For File operations
 using Newtonsoft.Json; // For JSON deserialization
+using System;
 
 namespace UniverseLib.Localization
 {
@@ -24,6 +25,7 @@ namespace UniverseLib.Localization
 
         private Dictionary<string, string> _localizedStrings = new Dictionary<string, string>();
         private string _currentLanguage = "en"; // Default language
+        public static event Action OnLanguageChanged; // Add language changed event
 
         // Private constructor to prevent external instantiation
         private LocalizationManager() { }
@@ -34,42 +36,54 @@ namespace UniverseLib.Localization
             _currentLanguage = languageCode;
             _localizedStrings.Clear();
 
-            // TODO: Implement actual loading logic from resource files (JSON, XML, etc.)
-            // This is a placeholder. You need to load data based on languageCode
-            // For example, if using JSON files like "en.json", "zh-CN.json", etc.:
-            // string filePath = $"Resources/{languageCode}.json"; // Adjust path as needed
-            // string jsonContent = File.ReadAllText(filePath); // Need System.IO
-            // Dictionary<string, string> languageData = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonContent); // Need Newtonsoft.Json or similar
-            // _localizedStrings = languageData;
-
-            // Dummy data example (remove this when actual loading is implemented):
-            if (languageCode == "en")
+            // 实际加载逻辑
+            try
             {
-                _localizedStrings["Example_Button_Text"] = "Click Me";
-                _localizedStrings["Example_Panel_Title"] = "Settings";
+                // 假设语言文件与程序集在同一目录下的 "Languages" 文件夹中
+                string languageFileName = $"{languageCode}.json";
+                string languagesFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Languages");
+                string filePath = Path.Combine(languagesFolderPath, languageFileName); // Modify to use two-parameter overload
+                if (File.Exists(filePath))
+                {
+                    string jsonContent = File.ReadAllText(filePath);
+                    _localizedStrings = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonContent);
+                    Universe.Log($"Loaded language: {languageCode}"); // Log successful loading
+                }
+                else
+                {
+                    Universe.LogWarning($"Language file not found: {filePath}");
+                }
             }
-            else if (languageCode == "zh-CN")
+            catch (Exception ex)
             {
-                _localizedStrings["Example_Button_Text"] = "点击我";
-                _localizedStrings["Example_Panel_Title"] = "设置";
+                Universe.LogError($"Failed to load language '{languageCode}': {ex.Message}");
             }
 
-            // TODO: After loading, trigger UI updates for currently visible elements
-            // You could raise an event here that UI components subscribe to.
+            // Trigger UI updates for currently visible elements
+            OnLanguageChanged?.Invoke();
         }
 
         // Method to get localized string by key
-        public static string GetString(string key)
+        public static string GetString(string key, string defaultValue = null)
         {
             // Use the singleton instance
             if (Instance._localizedStrings.TryGetValue(key, out string localizedString))
             {
                 return localizedString;
             }
-            
-            // If key not found, return the key itself or a placeholder
-            // TODO: Handle missing keys gracefully (e.g., log a warning)
-            return $"MissingKey:{key}"; 
+
+            // If key not found
+            Universe.LogWarning($"Missing localization key: '{key}' for language '{Instance._currentLanguage}'");
+
+            // TODO: Try to get from fallback language if implemented
+
+            return defaultValue ?? $"MissingKey:{key}";
+        }
+
+        // Method to change the current language
+        public void ChangeLanguage(string newLanguageCode)
+        {
+            LoadLanguage(newLanguageCode);
         }
 
         // TODO: Add methods for changing language and triggering UI updates

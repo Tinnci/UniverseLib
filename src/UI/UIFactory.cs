@@ -7,6 +7,7 @@ using UniverseLib.UI.Models;
 using UniverseLib.UI.Panels;
 using UniverseLib.UI.Widgets;
 using UniverseLib.UI.Widgets.ScrollView;
+using UniverseLib.Localization;
 
 namespace UniverseLib.UI
 {
@@ -278,6 +279,30 @@ namespace UniverseLib.UI
             textComp.supportRichText = supportRichText;
             textComp.alignment = alignment;
             textComp.fontSize = fontSize;
+
+            return textComp;
+        }
+
+        /// <summary>
+        /// Create a Text component with localization support.
+        /// </summary>
+        /// <param name="parent">The parent object to build onto</param>
+        /// <param name="name">The GameObject name of your label</param>
+        /// <param name="localizationKey">The localization key for the text</param>
+        /// <param name="alignment">The alignment of the Text component</param>
+        /// <param name="color">The Text color (default is White)</param>
+        /// <param name="supportRichText">Should the Text support rich text? (Can be changed afterwards)</param>
+        /// <param name="fontSize">The default font size</param>
+        /// <returns>Your new Text component with LocalizedText component attached.</returns>
+        public static Text CreateLabelLocalized(GameObject parent, string name, string localizationKey, TextAnchor alignment = TextAnchor.MiddleLeft,
+            Color color = default, bool supportRichText = true, int fontSize = 14)
+        {
+            // Create the label using the key as initial text
+            Text textComp = CreateLabel(parent, name, localizationKey, alignment, color, supportRichText, fontSize);
+
+            // Add the LocalizedText component and set the key
+            LocalizedText localizedText = textComp.gameObject.AddComponent<LocalizedText>();
+            localizedText.LocalizationKey = localizationKey;
 
             return textComp;
         }
